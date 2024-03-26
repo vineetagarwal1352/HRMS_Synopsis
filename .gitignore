@@ -1,6 +1,7 @@
 /client/node_modules
+/server/node_modules
 /node_modules
-/public/*
+/server/public/*
 !/public/.gitkeep
 
 # client/.pnp

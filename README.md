@@ -1,3 +1,8 @@
+main folder me aate hi sabse pehle "npm run setup" karna hai & then aage...
+Preferabbly use node(nvm) version 16.7.0 & npm version 7.20.3
+
+
+
 # Human Resource Management System 
 [Application Demo](https://limitless-bastion-82171.herokuapp.com/#/)
 

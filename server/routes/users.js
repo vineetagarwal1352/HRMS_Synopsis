@@ -7,6 +7,7 @@ let Admin = require("../models/admin.model");
 const axios = require("axios").default;
 const multer = require("multer");
 const path = require("path");
+require("dotenv").config();
 
 // @desc: login a user
 router.post("/login", async (req, res) => {

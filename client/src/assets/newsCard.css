@@ -3,13 +3,23 @@
   text-align: center;
   width: 290px;
   word-wrap: break-word;
-
   padding: 30px 10px 10px 10px;
   margin: 20px 0 20px 0;
   border-radius: 10px;
-
   transform: scale(1);
   transition: transform 0.2s, box-shadow 0.3s !important;
+  max-height: auto;
+  overflow: hidden;
+}
+
+.newsHeading {
+  font-weight: bold;
+  font-size: 3rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  text-decoration: underline;
+  text-shadow: 10px;
 }
 
 .newsContainer:hover {
@@ -20,12 +30,35 @@
 
 .titleText {
   font-size: 24px;
-  font-family: "Times New Roman", Times, serif;
+  font-family: 'Times New Roman', Times, serif;
   color: black;
+  display: subgrid;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linkToArticle {
+  text-decoration: none;
+  color: inherit;
+}
+
+.linkToArticle:hover {
+  text-decoration: underline;
+}
+
+.descriptionText {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  text-overflow: ellipsis;
 }
 
 .newsImg {
   width: 250px;
+  height: 150px;
+  object-fit: cover;
   border-radius: 5px;
 }

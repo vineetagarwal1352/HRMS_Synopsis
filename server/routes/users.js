@@ -249,7 +249,8 @@ router.get("/getNews", async (req, res) => {
   try {
     await axios
       .get(
-        `https://gnewsapi.net/api/search?q=technology&country=in&language=en&api_token=${api_key}`
+        // `https://gnewsapi.net/api/search?q=technology&country=in&language=en&api_token=${api_key}`
+        `https://gnews.io/api/v4/search?q=technology&country=in&language=en&max=10&apikey=${api_key}`
       )
       .then((resp) => {
         res.json(resp.data);

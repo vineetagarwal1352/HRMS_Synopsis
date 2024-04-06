@@ -447,7 +447,10 @@ export default class otherRequest extends Component {
                                     </div>
                                     <div className="input-group-append">
                                       <span
-                                        style={{ cursor: "pointer" }}
+                                        style={{ cursor: "pointer",
+                                      height: "34px",
+                                      marginLeft: "5px"
+                                      }}
                                         onClick={this.clearFile}
                                         className="input-group-text"
                                         id="file"
@@ -636,7 +639,9 @@ export default class otherRequest extends Component {
                                     </div>
                                     <div className="input-group-append">
                                       <span
-                                        style={{ cursor: "pointer" }}
+                                        style={{ cursor: "pointer", 
+                                        height: "34px",
+                                        marginLeft: "5px" }}
                                         onClick={this.clearFile}
                                         className="input-group-text"
                                         id="file"

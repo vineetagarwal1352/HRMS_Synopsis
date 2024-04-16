@@ -1,74 +1,66 @@
-import React, { Component } from "react";
-import { Consumer } from "../../context";
-import { Redirect } from "react-router-dom";
-import axios from "axios";
-import { Spring } from "react-spring/renderprops";
-import "../../assets/add-emp/addEmp.css";
-import AdminSidePanel from "./Admin/AdminSidePanel";
-import toast from "toasted-notes";
-import "toasted-notes/src/styles.css";
+import axios from 'axios'
+import React, { Component } from 'react'
+import { Redirect } from 'react-router-dom'
+import { Spring } from 'react-spring/renderprops'
+import toast from 'toasted-notes'
+import 'toasted-notes/src/styles.css'
+import '../../assets/add-emp/addEmp.css'
+import { Consumer } from '../../context'
+import AdminSidePanel from './Admin/AdminSidePanel'
 
 class AddEmployee extends Component {
   constructor() {
-    super();
+    super()
 
     this.state = {
-      email: "",
-      name: "",
-      address: "",
-      phoneNo: "",
-      role: "Select Role",
-      team: "Select Team",
-      gender: "Select Value",
-      doj: "",
+      email: '',
+      name: '',
+      address: '',
+      phoneNo: '',
+      role: 'Select Role',
+      team: 'Select Team',
+      gender: 'Select Value',
+      doj: '',
       disabled: false,
 
       // error
-      error: "",
+      error: '',
 
       // teams and roels
       teamList: [],
-      roleList: [],
-    };
+      roleList: []
+    }
   }
 
   componentDidMount = async () => {
-    const teamAndRoleList = await axios.get("/api/admin/getTeamsAndRoles");
-    console.log(teamAndRoleList.data[0]);
+    const teamAndRoleList = await axios.get('/api/admin/getTeamsAndRoles')
+    console.log(teamAndRoleList.data[0])
 
     this.setState({
       teamList: teamAndRoleList.data[0].teamNames,
-      roleList: teamAndRoleList.data[0].roleNames,
-    });
-  };
+      roleList: teamAndRoleList.data[0].roleNames
+    })
+  }
 
-  onSelectGender = (gender) => this.setState({ gender });
+  onSelectGender = gender => this.setState({ gender })
 
-  onTeamSelect = (team) => this.setState({ team });
+  onTeamSelect = team => this.setState({ team })
 
-  onRoleSelect = (role) => this.setState({ role });
+  onRoleSelect = role => this.setState({ role })
 
   onSubmit = async (dispatch, e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     // disable signup btn
     this.setState({
-      disabled: true,
-    });
+      disabled: true
+    })
 
-    const {
-      email,
-      name,
-      address,
-      phoneNo,
-      role,
-      team,
-      doj,
-      gender,
-    } = this.state;
+    const { email, name, address, phoneNo, role, team, doj, gender } =
+      this.state
 
     try {
-      const newUser = await axios.post("/api/admin/addEmployee", {
+      const newUser = await axios.post('/api/admin/addEmployee', {
         email,
         name,
         address,
@@ -76,37 +68,46 @@ class AddEmployee extends Component {
         phoneNo,
         role,
         team,
-        doj,
-      });
+        doj
+      })
 
-      toast.notify("Added new employee", {
-        position: "top-right",
-      });
+      toast.notify('Added new employee', {
+        position: 'top-right'
+      })
 
-      console.log("created acc successfully: ", newUser.data);
-      this.props.history.push(`/editEmpProfile/${newUser.data._id}`);
+      console.log('created acc successfully: ', newUser.data)
+      this.props.history.push(`/editEmpProfile/${newUser.data._id}`)
     } catch (err) {
       // enable signup btn
       this.setState({
-        disabled: false,
-      });
+        disabled: false
+      })
 
-      console.log("ERROR: ", err.response.data.msg);
-      this.setState({ error: err.response.data.msg });
+      console.log('ERROR: ', err.response.data.msg)
+      this.setState({ error: err.response.data.msg })
     }
-  };
+  }
 
-  onChange = (e) => this.setState({ [e.target.name]: e.target.value });
+  // onChange = e => this.setState({ [e.target.name]: e.target.value })
+  onChange = e => {
+    this.setState({
+      [e.target.name]: e.target.value
+    })
+
+    if (e.target.name === 'phoneNo' && e.target.value.length > 10) {
+      e.target.value = e.target.value.slice(0, 10)
+    }
+  }
 
   render() {
     return (
       <Consumer>
-        {(value) => {
-          let { user, dispatch, token } = value;
-          if (token === undefined) token = "";
+        {value => {
+          let { user, dispatch, token } = value
+          if (token === undefined) token = ''
 
           if (token) {
-            if (user.role !== "admin") return <Redirect to="/" />;
+            if (user.role !== 'admin') return <Redirect to="/" />
             return (
               <Spring
                 // from={{ opacity: 0 }}
@@ -114,14 +115,14 @@ class AddEmployee extends Component {
                 // config={{ duration: 300 }}
 
                 from={{
-                  transform: "translate3d(1000px,0,0) ",
+                  transform: 'translate3d(1000px,0,0) '
                 }}
                 to={{
-                  transform: "translate3d(0px,0,0) ",
+                  transform: 'translate3d(0px,0,0) '
                 }}
                 config={{ friction: 20 }}
               >
-                {(props) => (
+                {props => (
                   <>
                     <div className="row m-0">
                       {/* left part */}
@@ -133,9 +134,9 @@ class AddEmployee extends Component {
                       <div
                         className="col"
                         style={{
-                          display: "flex ",
-                          flexDirection: "row",
-                          justifyContent: "center",
+                          display: 'flex ',
+                          flexDirection: 'row',
+                          justifyContent: 'center'
                         }}
                       >
                         <div style={props}>
@@ -204,6 +205,7 @@ class AddEmployee extends Component {
                                   placeholder="1234567890"
                                   onChange={this.onChange}
                                   required
+                                  maxLength="10"
                                 />
                               </div>
                             </div>
@@ -227,9 +229,9 @@ class AddEmployee extends Component {
                                     className="dropdown-menu"
                                     aria-labelledby="dropdownMenuButton"
                                   >
-                                    {this.state.teamList.map((teamName) => (
+                                    {this.state.teamList.map(teamName => (
                                       <li
-                                        style={{ cursor: "pointer" }}
+                                        style={{ cursor: 'pointer' }}
                                         key={teamName}
                                         className="dropdown-item"
                                         onClick={() =>
@@ -261,9 +263,9 @@ class AddEmployee extends Component {
                                     className="dropdown-menu"
                                     aria-labelledby="dropdownMenuButton"
                                   >
-                                    {this.state.roleList.map((roleName) => (
+                                    {this.state.roleList.map(roleName => (
                                       <li
-                                        style={{ cursor: "pointer" }}
+                                        style={{ cursor: 'pointer' }}
                                         key={roleName}
                                         className="dropdown-item"
                                         onClick={() =>
@@ -289,6 +291,7 @@ class AddEmployee extends Component {
                                   placeholder="doj"
                                   onChange={this.onChange}
                                   required
+                                  max={new Date().toISOString().split('T')[0]}
                                 />
                               </div>
 
@@ -311,19 +314,19 @@ class AddEmployee extends Component {
                                     aria-labelledby="dropdownMenuButton"
                                   >
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item"
                                       onClick={() =>
-                                        this.onSelectGender("Male")
+                                        this.onSelectGender('Male')
                                       }
                                     >
                                       Male
                                     </li>
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item"
                                       onClick={() =>
-                                        this.onSelectGender("Female")
+                                        this.onSelectGender('Female')
                                       }
                                     >
                                       Female
@@ -345,14 +348,14 @@ class AddEmployee extends Component {
                   </>
                 )}
               </Spring>
-            );
+            )
           } else {
-            return <Redirect to="/login" />;
+            return <Redirect to="/login" />
           }
         }}
       </Consumer>
-    );
+    )
   }
 }
 
-export default AddEmployee;
+export default AddEmployee

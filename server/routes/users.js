@@ -7,6 +7,7 @@ let Admin = require("../models/admin.model");
 const axios = require("axios").default;
 const multer = require("multer");
 const path = require("path");
+require("dotenv").config();
 
 // @desc: login a user
 router.post("/login", async (req, res) => {
@@ -248,7 +249,8 @@ router.get("/getNews", async (req, res) => {
   try {
     await axios
       .get(
-        `https://gnewsapi.net/api/search?q=technology&country=in&language=en&api_token=${api_key}`
+        // `https://gnewsapi.net/api/search?q=technology&country=in&language=en&api_token=${api_key}`
+        `https://gnews.io/api/v4/search?q=technology&country=in&language=en&max=10&apikey=${api_key}`
       )
       .then((resp) => {
         res.json(resp.data);

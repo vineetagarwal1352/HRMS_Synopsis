@@ -37,7 +37,7 @@ router.post("/register", async (req, res) => {
     if (password !== passwordCheck) {
       return res
         .status(400)
-        .json({ msg: "Please enter the same password twice" });
+        .json({ msg: "Password & Confirm Password does not match!!" });
     }
 
     const existingUser = await Admin.findOne({ email: email });
@@ -144,7 +144,6 @@ router.post("/addEmployee", async (req, res) => {
 
     // generating password
     const password = "password";
-
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
       return res.status(400).json({

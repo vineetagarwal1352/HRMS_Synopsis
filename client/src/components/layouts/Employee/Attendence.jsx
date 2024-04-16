@@ -204,6 +204,7 @@ export default class Attendence extends Component {
                                     value={this.state.toDate}
                                     onChange={this.onChange}
                                     min={this.state.fromDate}
+                                    disabled={!this.state.fromDate}
                                   />
                                 </div>
                               </div>

@@ -1,56 +1,57 @@
-import axios from "axios";
-import React, { Component } from "react";
-import { Link, Redirect } from "react-router-dom";
-import { Spring } from "react-spring/renderprops";
-import toast from "toasted-notes";
-import "toasted-notes/src/styles.css";
-import { Consumer } from "../../../context";
-import LoanDetailsCard from "./LoanDetailsCard";
+import axios from 'axios'
+import React, { Component } from 'react'
+import { Link, Redirect } from 'react-router-dom'
+import { Spring } from 'react-spring/renderprops'
+import toast from 'toasted-notes'
+import 'toasted-notes/src/styles.css'
+import { Consumer } from '../../../context'
+import LoanDetailsCard from './LoanDetailsCard'
 
 export default class EditEmpProfile extends Component {
   constructor() {
-    super();
+    super()
     this.state = {
       //form
-      id: "",
-      name: "",
-      phoneNo: "",
-      email: "",
-      gender: "",
-      address: "",
-      role: "",
-      team: "",
-      doj: "",
-      skills: "",
+      id: '',
+      name: '',
+      phoneNo: '',
+      email: '',
+      gender: '',
+      address: '',
+      role: '',
+      team: '',
+      doj: '',
+      skills: '',
 
       // teams and roels
       teamList: [],
       roleList: [],
 
       // sal details
-      basicPay: "",
-      totalLeaves: "",
-      travelAllowance: "",
-      medicalAllowance: "",
-      bonus: "",
-      salary: "",
+      basicPay: '',
+      totalLeaves: '',
+      travelAllowance: '',
+      medicalAllowance: '',
+      bonus: '',
+      salary: '',
+      isCalculated: false,
 
       // loan details
-      empLoanHistory: [],
-    };
+      empLoanHistory: []
+    }
   }
 
   componentDidMount = async () => {
-    const userId = this.props.match.params.id;
+    const userId = this.props.match.params.id
 
-    const userData = await axios.get(`/api/admin/getUserData/${userId}`);
+    const userData = await axios.get(`/api/admin/getUserData/${userId}`)
     const userSalData = await axios.get(
       `/api/admin/getUserSalDetails/${userId}`
-    );
-    const teamAndRoleList = await axios.get("/api/admin/getTeamsAndRoles");
+    )
+    const teamAndRoleList = await axios.get('/api/admin/getTeamsAndRoles')
     const empLoanHistory = await axios.get(
       `/api/admin/getEmpLoanHistory/${userId}`
-    );
+    )
 
     this.setState({
       // form
@@ -79,35 +80,35 @@ export default class EditEmpProfile extends Component {
       salary: userSalData.data.salary,
 
       // loan details
-      empLoanHistory: empLoanHistory.data,
-    });
-  };
+      empLoanHistory: empLoanHistory.data
+    })
+  }
 
   onDelete = async () => {
     try {
-      const adminId = localStorage.getItem("userId");
+      const adminId = localStorage.getItem('userId')
       const deletedEmp = await axios.delete(
         `/api/admin/delete/${this.state.id}`,
         {
           data: {
-            adminId: adminId,
-          },
+            adminId: adminId
+          }
         }
-      );
+      )
 
-      toast.notify("Deleted profile successfully", {
-        position: "top-right",
-      });
+      toast.notify('Deleted profile successfully', {
+        position: 'top-right'
+      })
 
-      console.log("deleted: ", deletedEmp.data);
-      this.props.history.push("/viewEmployees");
+      console.log('deleted: ', deletedEmp.data)
+      this.props.history.push('/viewEmployees')
     } catch (e) {
-      console.log("Error", e);
+      console.log('Error', e)
     }
-  };
+  }
 
-  updateProfile = async (e) => {
-    e.preventDefault();
+  updateProfile = async e => {
+    e.preventDefault()
 
     const updatedUser = {
       name: this.state.name,
@@ -119,132 +120,133 @@ export default class EditEmpProfile extends Component {
       team: this.state.team,
       objective: this.state.objective,
       doj: this.state.doj,
-      skills: this.state.skills,
-    };
+      skills: this.state.skills
+    }
 
     try {
-      const res = await axios.post("/api/users/updateProfile", {
+      const res = await axios.post('/api/users/updateProfile', {
         user: updatedUser,
-        id: this.state.id,
-      });
+        id: this.state.id
+      })
 
-      toast.notify("Updated profile", {
-        position: "top-right",
-      });
+      toast.notify('Updated profile', {
+        position: 'top-right'
+      })
 
-      console.log(res.data);
+      console.log(res.data)
     } catch (e) {
-      console.log("Error: ", e);
+      console.log('Error: ', e)
     }
-  };
+  }
 
   updateSalDetails = async () => {
+    if (!this.state.isCalculated) {
+      toast.notify('Calculating salary first', {
+        position: 'top-right'
+      })
+      await this.onCalSal()
+    }
     const updatedSal = {
       basicPay: this.state.basicPay,
       totalLeaves: this.state.totalLeaves,
       travelAllowance: this.state.travelAllowance,
       medicalAllowance: this.state.medicalAllowance,
       bonus: this.state.bonus,
-      salary: this.state.salary,
-    };
+      salary: this.state.salary
+    }
 
     const res = await axios.put(
       `/api/admin/updateSalaryDetails/${this.state.id}`,
       {
-        salDetails: updatedSal,
+        salDetails: updatedSal
       }
-    );
+    )
 
-    toast.notify("Updated salary details", {
-      position: "top-right",
-    });
+    toast.notify('Updated salary details', {
+      position: 'top-right'
+    })
 
-    console.log(res.data);
-  };
+    console.log(res.data)
+  }
 
-  onSelectGender = (gender) => this.setState({ gender });
+  onSelectGender = gender => this.setState({ gender })
 
-  onTeamSelect = (team) => this.setState({ team });
+  onTeamSelect = team => this.setState({ team })
 
-  onRoleSelect = (role) => this.setState({ role });
+  onRoleSelect = role => this.setState({ role })
 
-  onCalSal = (e) => {
-    e.preventDefault();
-    let totalSal = 0;
-    const {
-      basicPay,
-      totalLeaves,
-      travelAllowance,
-      medicalAllowance,
-      bonus,
-    } = this.state;
+  onCalSal = e => {
+    e?.preventDefault()
+    let totalSal = 0
+    const { basicPay, totalLeaves, travelAllowance, medicalAllowance, bonus } =
+      this.state
 
     totalSal =
       parseInt(basicPay) +
       parseInt(travelAllowance) +
       parseInt(medicalAllowance) +
-      parseInt(bonus);
+      parseInt(bonus)
 
-    const perDaySal = totalSal / 30;
+    const perDaySal = totalSal / 30
     if (totalLeaves > 3) {
-      totalSal -= parseInt((totalLeaves - 3) * perDaySal);
+      totalSal -= parseInt((totalLeaves - 3) * perDaySal)
     }
-    this.setState({ salary: totalSal });
-  };
+    this.setState({ salary: totalSal, isCalculated: true })
+  }
 
-  onGetDate = (date) => {
-    const d = new Date(date);
-    let returnDate = d.toLocaleDateString("en-GB");
-    return returnDate;
-  };
+  onGetDate = date => {
+    const d = new Date(date)
+    let returnDate = d.toLocaleDateString('en-GB')
+    return returnDate
+  }
 
-  onMarkAsPaid = async (loanDetails) => {
-    console.log("loan details: ", loanDetails);
+  onMarkAsPaid = async loanDetails => {
+    console.log('loan details: ', loanDetails)
     try {
-      const paidLoan = await axios.put("/api/admin/loanPaid", {
+      const paidLoan = await axios.put('/api/admin/loanPaid', {
         loanId: loanDetails._id,
         empId: loanDetails.empId,
-        reqId: loanDetails.reqId,
-      });
+        reqId: loanDetails.reqId
+      })
 
-      toast.notify("Successfully marked loan as paid", {
-        position: "top-right",
-      });
+      toast.notify('Successfully marked loan as paid', {
+        position: 'top-right'
+      })
 
       // update state to refresh data on this page
-      let empLoanHistory = this.state.empLoanHistory;
+      let empLoanHistory = this.state.empLoanHistory
 
-      empLoanHistory.forEach((loan) => {
+      empLoanHistory.forEach(loan => {
         if (loan.reqId === loanDetails.reqId) {
-          loan.loanRepaid = true;
+          loan.loanRepaid = true
         }
-      });
+      })
 
       this.setState({
-        empLoanHistory,
-      });
+        empLoanHistory
+      })
 
-      console.log("marked as paid: ", paidLoan.data);
+      console.log('marked as paid: ', paidLoan.data)
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
-  onUpdateLoanDetails = async () => {};
+  onUpdateLoanDetails = async () => {}
 
-  onChange = (e) => this.setState({ [e.target.name]: e.target.value });
+  onChange = e => this.setState({ [e.target.name]: e.target.value })
 
   render() {
     return (
       <Consumer>
-        {(value) => {
-          let { user } = value;
+        {value => {
+          let { user } = value
 
-          const token = localStorage.getItem("auth-token");
+          const token = localStorage.getItem('auth-token')
 
-          if (!token) return <Redirect to="/login" />;
-          if (user && user.role !== "admin")
-            return <Redirect to="/empDashBoard" />;
+          if (!token) return <Redirect to="/login" />
+          if (user && user.role !== 'admin')
+            return <Redirect to="/empDashBoard" />
 
           return (
             <Spring
@@ -252,7 +254,7 @@ export default class EditEmpProfile extends Component {
               to={{ opacity: 1 }}
               config={{ duration: 300 }}
             >
-              {(props) => (
+              {props => (
                 <div className="container" style={props}>
                   <div className="row m-0">
                     {/* col 1*/}
@@ -341,7 +343,7 @@ export default class EditEmpProfile extends Component {
                                     className="dropdown-menu"
                                     aria-labelledby="dropdownMenuButton"
                                   >
-                                    {this.state.teamList.map((teamName) => (
+                                    {this.state.teamList.map(teamName => (
                                       <li
                                         key={teamName}
                                         className="dropdown-item"
@@ -374,7 +376,7 @@ export default class EditEmpProfile extends Component {
                                     className="dropdown-menu"
                                     aria-labelledby="dropdownMenuButton"
                                   >
-                                    {this.state.roleList.map((roleName) => (
+                                    {this.state.roleList.map(roleName => (
                                       <li
                                         key={roleName}
                                         className="dropdown-item"
@@ -426,7 +428,7 @@ export default class EditEmpProfile extends Component {
                                       <li
                                         className="dropdown-item"
                                         onClick={() =>
-                                          this.onSelectGender("Male")
+                                          this.onSelectGender('Male')
                                         }
                                       >
                                         Male
@@ -434,7 +436,7 @@ export default class EditEmpProfile extends Component {
                                       <li
                                         className="dropdown-item"
                                         onClick={() =>
-                                          this.onSelectGender("Female")
+                                          this.onSelectGender('Female')
                                         }
                                       >
                                         Female
@@ -474,16 +476,16 @@ export default class EditEmpProfile extends Component {
                           {this.state.empLoanHistory.length ? (
                             <form
                               className="addEmpForm"
-                              style={{ height: "460px", overflowY: "scroll" }}
+                              style={{ height: '460px', overflowY: 'scroll' }}
                             >
                               <h3>Employee Loan History</h3>
                               <hr />
 
-                              {this.state.empLoanHistory.map((loan) => (
+                              {this.state.empLoanHistory.map(loan => (
                                 <LoanDetailsCard
                                   key={loan.reqId}
                                   isAdmin={
-                                    user && user.role === "admin" ? true : false
+                                    user && user.role === 'admin' ? true : false
                                   }
                                   loanDetails={loan}
                                   onGetDate={this.onGetDate}
@@ -574,6 +576,7 @@ export default class EditEmpProfile extends Component {
                               type="button"
                               id="button-addon2"
                               onClick={this.onCalSal}
+                              disabled={this.state.isCalculated}
                             >
                               Calculate Salary
                             </button>
@@ -610,9 +613,9 @@ export default class EditEmpProfile extends Component {
                 </div>
               )}
             </Spring>
-          );
+          )
         }}
       </Consumer>
-    );
+    )
   }
 }

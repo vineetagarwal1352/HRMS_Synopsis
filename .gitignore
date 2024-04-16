@@ -3,6 +3,7 @@
 /node_modules
 /server/public/*
 !/public/.gitkeep
+/client/.eslintcache
 
 # client/.pnp
 # client/coverage

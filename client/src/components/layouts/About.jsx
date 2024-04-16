@@ -1,6 +1,6 @@
 import React from "react";
 import { Spring } from "react-spring/renderprops";
-import checkList from "../../assets/images/checklist.svg";
+import checkList from "../../assets/images/aboutus.png";
 import "../../assets/about-styles/about.css";
 
 export default function About() {
@@ -49,7 +49,18 @@ export default function About() {
               </div>
 
               <div className="col">
-                <img className="aboutSVG" src={checkList} alt="" />
+                <img
+                  className="aboutSVG"
+                  src={checkList}
+                  alt=""
+                  style={{
+                    position: "fixed",
+                    top: "100px",
+                    left: "40%",
+                    height: "70%",
+                    width: "60%",
+                  }}
+                />
               </div>
             </div>
           )}

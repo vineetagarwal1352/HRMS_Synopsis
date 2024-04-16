@@ -1,150 +1,147 @@
-import axios from "axios";
-import React, { Component } from "react";
-import AdminSidePanel from "./AdminSidePanel";
-import toast from "toasted-notes";
-import "toasted-notes/src/styles.css";
-import { Consumer } from "../../../context";
-import { Redirect } from "react-router-dom";
-import { Spring } from "react-spring/renderprops";
+import axios from 'axios'
+import React, { Component } from 'react'
+import { Redirect } from 'react-router-dom'
+import { Spring } from 'react-spring/renderprops'
+import toast from 'toasted-notes'
+import 'toasted-notes/src/styles.css'
+import { Consumer } from '../../../context'
+import AdminSidePanel from './AdminSidePanel'
 
 export default class Options extends Component {
   constructor() {
-    super();
+    super()
 
     this.state = {
-      teamName: "",
-      roleName: "",
+      teamName: '',
+      roleName: '',
 
       existingTeamList: [],
       existingRoleList: [],
 
-      error: "",
+      error: '',
 
       // google calender
-      title: "",
-      description: "",
-      dueDate: "",
-      time: "",
-    };
+      title: '',
+      description: '',
+      dueDate: '',
+      time: ''
+    }
   }
 
   componentDidMount = async () => {
-    const teamList = await axios.get("/api/admin/getTeamsAndRoles");
-    console.log(teamList.data[0]);
+    const teamList = await axios.get('/api/admin/getTeamsAndRoles')
+    console.log(teamList.data[0])
 
     this.setState({
       existingTeamList: teamList.data[0].teamNames,
-      existingRoleList: teamList.data[0].roleNames,
-    });
-  };
+      existingRoleList: teamList.data[0].roleNames
+    })
+  }
 
-  onChange = (e) =>
-    this.setState({ [e.target.name]: e.target.value, error: "" });
+  onChange = e => this.setState({ [e.target.name]: e.target.value, error: '' })
 
   onAddTeam = async () => {
     // check if team name already exists
-    const { existingTeamList } = this.state;
-    const { teamName } = this.state;
+    const { existingTeamList } = this.state
+    const { teamName } = this.state
 
     if (teamName.trim().length === 0) {
       this.setState({
-        error: "Team name cannot be empty",
-      });
+        error: 'Team name cannot be empty'
+      })
     } else if (existingTeamList.includes(teamName.trim())) {
       this.setState({
-        error: "Team name already exists",
-      });
+        error: 'Team name already exists'
+      })
     } else {
       // save the new team
-      const newTeam = await axios.post("/api/admin/addNewTeam", {
-        teamName: this.state.teamName,
-      });
+      const newTeam = await axios.post('/api/admin/addNewTeam', {
+        teamName: this.state.teamName
+      })
 
-      this.setState({ existingTeamList: newTeam.data.teamNames });
+      this.setState({ existingTeamList: newTeam.data.teamNames })
 
-      toast.notify("New team added successfully", {
-        position: "top-right",
-      });
+      toast.notify('New team added successfully', {
+        position: 'top-right'
+      })
 
-      console.log("added new team: ", newTeam.data);
+      console.log('added new team: ', newTeam.data)
     }
-  };
+  }
 
   onAddRole = async () => {
     // check if team name already exists
-    const { existingRoleList } = this.state;
-    const { roleName } = this.state;
+    const { existingRoleList } = this.state
+    const { roleName } = this.state
 
     if (roleName.trim().length === 0) {
       this.setState({
-        error: "Role name cannot be empty",
-      });
+        error: 'Role name cannot be empty'
+      })
     } else if (existingRoleList.includes(roleName.trim())) {
       this.setState({
-        error: "Role name already exists",
-      });
+        error: 'Role name already exists'
+      })
     } else {
       // save the new Role
-      const newRole = await axios.post("/api/admin/addNewRole", {
-        roleName: this.state.roleName,
-      });
+      const newRole = await axios.post('/api/admin/addNewRole', {
+        roleName: this.state.roleName
+      })
 
-      toast.notify("New role added successfully", {
-        position: "top-right",
-      });
+      toast.notify('New role added successfully', {
+        position: 'top-right'
+      })
 
-      this.setState({ existingRoleList: newRole.data.roleNames });
+      this.setState({ existingRoleList: newRole.data.roleNames })
 
-      console.log("added new role: ", newRole.data);
+      console.log('added new role: ', newRole.data)
     }
-  };
+  }
 
-  onDeleteAdminAccount = async (dispatch) => {
-    const adminId = localStorage.getItem("userId");
+  onDeleteAdminAccount = async dispatch => {
+    const adminId = localStorage.getItem('userId')
 
     try {
-      await axios.delete(`/api/admin/deleteAdminAcc/${adminId}`);
-      console.log("deleted admin acc");
-      localStorage.setItem("auth-token", "");
-      localStorage.setItem("userId", "");
+      await axios.delete(`/api/admin/deleteAdminAcc/${adminId}`)
+      console.log('deleted admin acc')
+      localStorage.setItem('auth-token', '')
+      localStorage.setItem('userId', '')
 
       dispatch({
-        type: "LOGGED_OUT",
-      });
+        type: 'LOGGED_OUT'
+      })
 
-      this.props.history.push("/login");
+      this.props.history.push('/login')
     } catch (err) {
-      console.log(err.response.data);
+      console.log(err.response.data)
     }
-  };
+  }
 
-  addToGoogleCalender = (e) => {
-    e.preventDefault();
+  addToGoogleCalender = e => {
+    e.preventDefault()
 
     try {
-      var gapi = window.gapi;
-      console.log(gapi);
+      var gapi = window.gapi
+      console.log(gapi)
       var CLIENT_ID =
-        "487679379915-7rvf2ror46e4bbsj8t8obali4heq5qjm.apps.googleusercontent.com";
-      var API_KEY = "AIzaSyB_HYziuQ7j6s9CiqSgXV3YiGTzr5nc0xE";
+        '487679379915-7rvf2ror46e4bbsj8t8obali4heq5qjm.apps.googleusercontent.com'
+      var API_KEY = 'AIzaSyB_HYziuQ7j6s9CiqSgXV3YiGTzr5nc0xE'
       var DISCOVERY_DOCS = [
-        "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-      ];
-      var SCOPES = "https://www.googleapis.com/auth/calendar.events";
+        'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
+      ]
+      var SCOPES = 'https://www.googleapis.com/auth/calendar.events'
 
-      gapi.load("client:auth2", () => {
-        console.log("loaded client");
+      gapi.load('client:auth2', () => {
+        console.log('loaded client')
 
         gapi.client.init({
           apiKey: API_KEY,
           clientId: CLIENT_ID,
           discoveryDocs: DISCOVERY_DOCS,
-          scope: SCOPES,
-        });
+          scope: SCOPES
+        })
 
-        gapi.client.load("calendar", "v3", () =>
-          console.log("loaded calender")
-        );
+        gapi.client.load('calendar', 'v3', () => console.log('loaded calender'))
 
         gapi.auth2
           .getAuthInstance()
@@ -155,53 +152,53 @@ export default class Options extends Component {
               description: this.state.description,
               start: {
                 dateTime: `${this.state.dueDate}T${this.state.time}:00`,
-                timeZone: "Asia/Kolkata",
+                timeZone: 'Asia/Kolkata'
               },
               end: {
                 dateTime: `${this.state.dueDate}T${this.state.time}:00`,
-                timeZone: "Asia/Kolkata",
+                timeZone: 'Asia/Kolkata'
               },
               reminders: {
                 useDefault: false,
                 overrides: [
-                  { method: "email", minutes: 24 * 60 },
-                  { method: "popup", minutes: 10 },
-                ],
-              },
-            };
+                  { method: 'email', minutes: 24 * 60 },
+                  { method: 'popup', minutes: 10 }
+                ]
+              }
+            }
 
             var request = gapi.client.calendar.events.insert({
-              calendarId: "primary",
-              resource: event,
-            });
+              calendarId: 'primary',
+              resource: event
+            })
 
-            console.log("add new event from addTodo");
+            console.log('add new event from addTodo')
 
-            request.execute((event) => {
-              console.log(event);
-            });
+            request.execute(event => {
+              console.log(event)
+            })
 
-            toast.notify("Successfully set reminder to your Google Calender", {
-              position: "top-right",
-            });
-          });
-      });
+            toast.notify('Successfully set reminder to your Google Calender', {
+              position: 'top-right'
+            })
+          })
+      })
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
   render() {
     return (
       <Consumer>
-        {(value) => {
-          let { dispatch, user } = value;
+        {value => {
+          let { dispatch, user } = value
 
-          const token = localStorage.getItem("auth-token");
+          const token = localStorage.getItem('auth-token')
 
-          if (!token) return <Redirect to="/login" />;
-          if (user && user.role !== "admin")
-            return <Redirect to="/empDashBoard" />;
+          if (!token) return <Redirect to="/login" />
+          if (user && user.role !== 'admin')
+            return <Redirect to="/empDashBoard" />
 
           return (
             <Spring
@@ -209,7 +206,7 @@ export default class Options extends Component {
               to={{ opacity: 1 }}
               config={{ duration: 300 }}
             >
-              {(props) => (
+              {props => (
                 <div className="row m-0">
                   {/* left part */}
                   <div className="col-2 p-0 leftPart">
@@ -294,7 +291,14 @@ export default class Options extends Component {
                               className="btn btn-danger"
                               value="Delete Admin Account"
                               onClick={() =>
-                                this.onDeleteAdminAccount(dispatch)
+                                toast.notify(
+                                  'Admin account deleted successfully',
+                                  {
+                                    position: 'top-right',
+                                    duration: 3000,
+                                    color: '#ff0000'
+                                  }
+                                ) && this.onDeleteAdminAccount(dispatch)
                               }
                             />
 
@@ -318,8 +322,8 @@ export default class Options extends Component {
                           className="addEmpForm"
                         >
                           <h3>
-                            Add Reminder{" "}
-                            <i className="fab fa-google text-dark"></i>{" "}
+                            Add Reminder{' '}
+                            <i className="fab fa-google text-dark"></i>{' '}
                           </h3>
                           <hr />
 
@@ -403,9 +407,9 @@ export default class Options extends Component {
                 </div>
               )}
             </Spring>
-          );
+          )
         }}
       </Consumer>
-    );
+    )
   }
 }

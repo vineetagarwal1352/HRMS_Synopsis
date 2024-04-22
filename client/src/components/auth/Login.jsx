@@ -1,86 +1,86 @@
-import React, { Component } from "react";
-import { Redirect } from "react-router-dom";
-import axios from "axios";
-import { Consumer } from "../../context";
-import { Spring } from "react-spring/renderprops";
+import axios from 'axios'
+import React, { Component } from 'react'
+import { Redirect } from 'react-router-dom'
+import { Spring } from 'react-spring/renderprops'
+import { Consumer } from '../../context'
 // import loginSVG from "../../assets/login-signup-styles/login3.svg";
-import loginAvatar from "../../assets/login-signup-styles/loginAvatar.png";
-import "../../assets/login-signup-styles/login-signup.css";
+import '../../assets/login-signup-styles/login-signup.css'
+import loginAvatar from '../../assets/login-signup-styles/loginAvatar.png'
 // import authentication from "../../assets/images/authentication.svg";
-import authentication from "../../assets/images/login.png";
+import authentication from '../../assets/images/login.png'
 
 class Login extends Component {
   constructor() {
-    super();
+    super()
 
     this.state = {
-      email: "",
-      password: "",
-      error: "",
-      disabled: false,
-    };
+      email: '',
+      password: '',
+      error: '',
+      disabled: false
+    }
   }
 
   onSubmit = async (dispatch, e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     // disable loggin btn
     this.setState({
-      disabled: true,
-    });
+      disabled: true
+    })
 
-    const { email, password } = this.state;
+    const { email, password } = this.state
 
     try {
       // check in both MODELS since we dont know whether its admin or emp
-      let loggedInUser;
+      let loggedInUser
 
       try {
         loggedInUser = await axios.post(`/api/admin/login`, {
           email,
-          password,
-        });
+          password
+        })
       } catch (e) {
         loggedInUser = await axios.post(`/api/users/login`, {
           email,
-          password,
-        });
+          password
+        })
       }
 
-      console.log("logged in successfully: ", loggedInUser.data);
+      console.log('logged in successfully: ', loggedInUser.data)
 
-      localStorage.setItem("auth-token", loggedInUser.data.token);
-      localStorage.setItem("userId", loggedInUser.data.user._id);
+      localStorage.setItem('auth-token', loggedInUser.data.token)
+      localStorage.setItem('userId', loggedInUser.data.user._id)
 
       dispatch({
-        type: "LOGGED_IN",
+        type: 'LOGGED_IN',
         payload: {
           user: loggedInUser.data.user,
-          token: loggedInUser.data.token,
-        },
-      });
-      if (email === "admin@gmail.com") this.props.history.push("/");
-      else this.props.history.push("/empDashBoard");
+          token: loggedInUser.data.token
+        }
+      })
+      if (email === 'admin@gmail.com') this.props.history.push('/')
+      else this.props.history.push('/empDashBoard')
     } catch (err) {
       // enable login btn
       this.setState({
-        disabled: false,
-      });
+        disabled: false
+      })
 
-      console.log("ERROR: ", err);
-      this.setState({ error: err.response.data.msg });
+      console.log('ERROR: ', err)
+      this.setState({ error: err.response.data.msg })
     }
-  };
+  }
 
-  onChange = (e) => this.setState({ [e.target.name]: e.target.value });
+  onChange = e => this.setState({ [e.target.name]: e.target.value })
 
   render() {
     return (
       <Consumer>
-        {(value) => {
-          let { dispatch, token } = value;
-          if (token === undefined) token = "";
-          const { error } = this.state;
+        {value => {
+          let { dispatch, token } = value
+          if (token === undefined) token = ''
+          const { error } = this.state
 
           if (!token) {
             return (
@@ -89,7 +89,7 @@ class Login extends Component {
                 to={{ opacity: 1 }}
                 config={{ duration: 300 }}
               >
-                {(props) => (
+                {props => (
                   <div style={props}>
                     <div className="row m-0">
                       <div className="col">
@@ -141,13 +141,13 @@ class Login extends Component {
                             <h6 className=" mt-3 alert alert-warning text-center">
                               <div className="row">
                                 <div className="col">
-                                  Admin: admin@gmail.com <br />
-                                  User: {"<user>@gmail.com"} <br />
+                                  Empower your journey: <br />
                                 </div>
                               </div>
                               <div className="row mt-2">
                                 <div className="col">
-                                  Default password for all: password
+                                  Work with purpose, achieve with passion and
+                                  grow with pride.
                                 </div>
                               </div>
                             </h6>
@@ -159,14 +159,14 @@ class Login extends Component {
                   </div>
                 )}
               </Spring>
-            );
+            )
           } else {
-            return <Redirect to="/" />;
+            return <Redirect to="/" />
           }
         }}
       </Consumer>
-    );
+    )
   }
 }
 
-export default Login;
+export default Login

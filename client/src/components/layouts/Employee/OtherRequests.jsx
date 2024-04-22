@@ -1,80 +1,90 @@
-import axios from "axios";
-import React, { Component } from "react";
-import { Consumer } from "../../../context";
-import { v4 as uuidv4 } from "uuid";
-import { Redirect } from "react-router-dom";
-import EmpSidePanel from "./EmpSidePanel";
-import toast from "toasted-notes";
-import "toasted-notes/src/styles.css";
-import classNames from "classnames";
-import { Spring } from "react-spring/renderprops";
+import axios from 'axios'
+import classNames from 'classnames'
+import React, { Component } from 'react'
+import { Redirect } from 'react-router-dom'
+import { Spring } from 'react-spring/renderprops'
+import toast from 'toasted-notes'
+import 'toasted-notes/src/styles.css'
+import { v4 as uuidv4 } from 'uuid'
+import { Consumer } from '../../../context'
+import EmpSidePanel from './EmpSidePanel'
 export default class otherRequest extends Component {
   constructor() {
-    super();
+    super()
 
     this.state = {
       // loan related
-      loanReason: "Medical Expenditure",
-      otherLoanReason: "",
-      loanNote: "",
-      ModeOfRepayment: "Deduction from salary",
-      amount: "",
-      timePeriod: "",
+      loanReason: 'Medical Expenditure',
+      otherLoanReason: '',
+      loanNote: '',
+      ModeOfRepayment: 'Deduction from salary',
+      amount: '',
+      timePeriod: '',
 
       // bonus related
-      bonusReason: "Employee Referral Program",
-      otherBonusReason: "",
-      bonusNote: "",
+      bonusReason: 'Employee Referral Program',
+      otherBonusReason: '',
+      bonusNote: '',
 
       // file
       attachLoanFile: false,
       attachBonusFile: false,
-      attachmentName: "",
-      file: "",
-    };
+      attachmentName: '',
+      file: ''
+    }
   }
 
-  onChange = (e) => this.setState({ [e.target.name]: e.target.value });
+  // onChange = e => this.setState({ [e.target.name]: e.target.value })
+  onChange = e => {
+    const { name, value } = e.target
+    if (name === 'amount' || name === 'timePeriod') {
+      if (value < 1)
+        return toast.notify('Value should be greater than 0', {
+          position: 'top-right'
+        })
+    }
+    this.setState({ [name]: value })
+  }
 
   onUploadFile = async () => {
     // upload file if selected
     if (this.state.file) {
-      const data = new FormData();
-      data.append("file", this.state.file);
+      const data = new FormData()
+      data.append('file', this.state.file)
 
       const config = {
         headers: {
-          "content-type": "multipart/form-data",
-        },
-      };
+          'content-type': 'multipart/form-data'
+        }
+      }
 
       try {
         const fileUploadRes = await axios.post(
-          "/api/users/uploadfile",
+          '/api/users/uploadfile',
           data,
           config
-        );
+        )
 
-        console.log(fileUploadRes.data.filename);
+        console.log(fileUploadRes.data.filename)
 
-        this.setState({ attachmentName: fileUploadRes.data.filename });
+        this.setState({ attachmentName: fileUploadRes.data.filename })
       } catch (err) {
-        console.log(err);
+        console.log(err)
       }
     }
-  };
+  }
 
   onBonusSubmit = async (user, e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    await this.onUploadFile();
+    await this.onUploadFile()
 
     let bonusReason = this.state.otherBonusReason
       ? this.state.otherBonusReason
-      : this.state.bonusReason;
+      : this.state.bonusReason
 
     const request = {
-      title: "bonus request",
+      title: 'bonus request',
       reqId: uuidv4(),
       empId: user._id,
       empName: user.name,
@@ -87,34 +97,34 @@ export default class otherRequest extends Component {
       attachmentName: this.state.attachmentName,
       bonusReason,
       approved: false,
-      ticketClosed: false,
-    };
+      ticketClosed: false
+    }
 
     // push to admin notification
-    const res = await axios.put("/api/users/bonusRequest", {
-      request,
-    });
+    const res = await axios.put('/api/users/bonusRequest', {
+      request
+    })
 
-    toast.notify("Successfully submitted bonus request", {
-      position: "top-right",
-    });
+    toast.notify('Successfully submitted bonus request', {
+      position: 'top-right'
+    })
 
-    this.props.history.push("/myRequests");
+    this.props.history.push('/myRequests')
 
-    console.log("res: ", res.data);
-  };
+    console.log('res: ', res.data)
+  }
 
   onLoanSubmit = async (user, e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    await this.onUploadFile();
+    await this.onUploadFile()
 
     let loanReason = this.state.otherLoanReason
       ? this.state.otherLoanReason
-      : this.state.loanReason;
+      : this.state.loanReason
 
     const request = {
-      title: "loan request",
+      title: 'loan request',
       reqId: uuidv4(),
       empId: user._id,
       date: new Date(),
@@ -131,58 +141,58 @@ export default class otherRequest extends Component {
       timePeriod: this.state.timePeriod,
       approved: false,
       ticketClosed: false,
-      loanRepaid: false,
-    };
+      loanRepaid: false
+    }
 
     // push to admin notification
-    const res = await axios.put("/api/users/loanRequest", {
-      request,
-    });
+    const res = await axios.put('/api/users/loanRequest', {
+      request
+    })
 
-    toast.notify("Successfully submitted loan request", {
-      position: "top-right",
-    });
+    toast.notify('Successfully submitted loan request', {
+      position: 'top-right'
+    })
 
-    this.props.history.push("/myRequests");
-    console.log("successfully submitted req: ", res.data);
-  };
+    this.props.history.push('/myRequests')
+    console.log('successfully submitted req: ', res.data)
+  }
 
-  onReasonSelect = (loanReason) =>
-    this.setState({ loanReason, otherLoanReason: "" });
+  onReasonSelect = loanReason =>
+    this.setState({ loanReason, otherLoanReason: '' })
 
-  onModeOfRepaymentSelect = (ModeOfRepayment) =>
-    this.setState({ ModeOfRepayment });
+  onModeOfRepaymentSelect = ModeOfRepayment =>
+    this.setState({ ModeOfRepayment })
 
-  onBonusReasonSelect = (bonusReason) => this.setState({ bonusReason });
+  onBonusReasonSelect = bonusReason => this.setState({ bonusReason })
 
-  onFileChange = (e) => {
+  onFileChange = e => {
     try {
-      console.log(e.target.files[0]);
+      console.log(e.target.files[0])
       this.setState({
         file: e.target.files[0],
-        attachmentName: e.target.files[0].name,
-      });
+        attachmentName: e.target.files[0].name
+      })
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
-  clearFile = (e) => {
-    e.preventDefault();
-    console.log("clearing...");
-    this.fileInput.value = "";
-    this.setState({ file: "", attachmentName: "" });
-  };
+  clearFile = e => {
+    e.preventDefault()
+    console.log('clearing...')
+    this.fileInput.value = ''
+    this.setState({ file: '', attachmentName: '' })
+  }
 
   render() {
     return (
       <Consumer>
-        {(value) => {
-          let { user } = value;
-          const token = localStorage.getItem("auth-token");
-          if (!token) return <Redirect to="/login" />;
+        {value => {
+          let { user } = value
+          const token = localStorage.getItem('auth-token')
+          if (!token) return <Redirect to="/login" />
 
-          if (user && user.role === "admin") return <Redirect to="/" />;
+          if (user && user.role === 'admin') return <Redirect to="/" />
 
           return (
             <Spring
@@ -190,14 +200,14 @@ export default class otherRequest extends Component {
               // to={{ opacity: 1 }}
               // config={{ duration: 300 }}
               from={{
-                transform: "translate3d(0,-1000px,0) ",
+                transform: 'translate3d(0,-1000px,0) '
               }}
               to={{
-                transform: "translate3d(0px,0,0) ",
+                transform: 'translate3d(0px,0,0) '
               }}
               config={{ friction: 20 }}
             >
-              {(props) => (
+              {props => (
                 <div className="row m-0">
                   {/* left part */}
                   <div className="col-2 p-0 leftPart">
@@ -237,41 +247,41 @@ export default class otherRequest extends Component {
                                     aria-labelledby="dropdownMenuButton"
                                   >
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
                                         this.onReasonSelect(
-                                          "Medical Expenditure"
+                                          'Medical Expenditure'
                                         )
                                       }
                                     >
                                       Medical Expenditure
                                     </li>
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
                                         this.onReasonSelect(
-                                          "Moving Expenditure"
+                                          'Moving Expenditure'
                                         )
                                       }
                                     >
                                       Moving Expenditure
                                     </li>
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
-                                        this.onReasonSelect("Buy Assets")
+                                        this.onReasonSelect('Buy Assets')
                                       }
                                     >
                                       Buy Assets
                                     </li>
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
-                                        this.onReasonSelect("Other")
+                                        this.onReasonSelect('Other')
                                       }
                                     >
                                       Other
@@ -279,7 +289,7 @@ export default class otherRequest extends Component {
                                   </div>
                                 </div>
 
-                                {this.state.loanReason === "Other" ? (
+                                {this.state.loanReason === 'Other' ? (
                                   <input
                                     required
                                     type="text"
@@ -317,33 +327,33 @@ export default class otherRequest extends Component {
                                     aria-labelledby="dropdownMenuButton2"
                                   >
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
                                         this.onModeOfRepaymentSelect(
-                                          "Deduction from salary"
+                                          'Deduction from salary'
                                         )
                                       }
                                     >
                                       Deduction from salary
                                     </li>
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
                                         this.onModeOfRepaymentSelect(
-                                          "One Time Payment"
+                                          'One Time Payment'
                                         )
                                       }
                                     >
                                       One Time Payment
                                     </li>
                                     <li
-                                      style={{ cursor: "pointer" }}
+                                      style={{ cursor: 'pointer' }}
                                       className="dropdown-item btn-primary"
                                       onClick={() =>
                                         this.onModeOfRepaymentSelect(
-                                          "Installment"
+                                          'Installment'
                                         )
                                       }
                                     >
@@ -409,20 +419,19 @@ export default class otherRequest extends Component {
                               <div className="col-11">
                                 <p
                                   className="text-secondary"
-                                  style={{ cursor: "pointer" }}
+                                  style={{ cursor: 'pointer' }}
                                   onClick={() =>
                                     this.setState({
-                                      attachLoanFile: !this.state
-                                        .attachLoanFile,
+                                      attachLoanFile: !this.state.attachLoanFile
                                     })
                                   }
                                 >
-                                  Attachment (if any){" "}
+                                  Attachment (if any){' '}
                                   <i
-                                    className={classNames("fa", {
-                                      "fa-caret-down": !this.state
-                                        .attachLoanFile,
-                                      "fa-caret-up": this.state.attachLoanFile,
+                                    className={classNames('fa', {
+                                      'fa-caret-down':
+                                        !this.state.attachLoanFile,
+                                      'fa-caret-up': this.state.attachLoanFile
                                     })}
                                   ></i>
                                 </p>
@@ -434,7 +443,7 @@ export default class otherRequest extends Component {
                                         id="file"
                                         className="custom-file-input"
                                         onChange={this.onFileChange}
-                                        ref={(ref) => (this.fileInput = ref)}
+                                        ref={ref => (this.fileInput = ref)}
                                       />
                                       <label
                                         className="custom-file-label"
@@ -442,15 +451,16 @@ export default class otherRequest extends Component {
                                       >
                                         {this.state.attachmentName
                                           ? this.state.attachmentName
-                                          : "Upload file"}
+                                          : 'Upload file'}
                                       </label>
                                     </div>
                                     <div className="input-group-append">
                                       <span
-                                        style={{ cursor: "pointer",
-                                      height: "34px",
-                                      marginLeft: "5px"
-                                      }}
+                                        style={{
+                                          cursor: 'pointer',
+                                          height: '34px',
+                                          marginLeft: '5px'
+                                        }}
                                         onClick={this.clearFile}
                                         className="input-group-text"
                                         id="file"
@@ -502,63 +512,63 @@ export default class otherRequest extends Component {
                                   aria-labelledby="dropdownMenuButton2"
                                 >
                                   <li
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: 'pointer' }}
                                     className="dropdown-item btn-primary"
                                     onClick={() =>
                                       this.onBonusReasonSelect(
-                                        "Employee Referral Program"
+                                        'Employee Referral Program'
                                       )
                                     }
                                   >
                                     Employee Referral Program
                                   </li>
                                   <li
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: 'pointer' }}
                                     className="dropdown-item btn-primary"
                                     onClick={() =>
                                       this.onBonusReasonSelect(
-                                        "Exceptional Achievement"
+                                        'Exceptional Achievement'
                                       )
                                     }
                                   >
                                     Exceptional Achievement
                                   </li>
                                   <li
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: 'pointer' }}
                                     className="dropdown-item btn-primary"
                                     onClick={() =>
                                       this.onBonusReasonSelect(
-                                        "Exceptional Service"
+                                        'Exceptional Service'
                                       )
                                     }
                                   >
                                     Exceptional Service
                                   </li>
                                   <li
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: 'pointer' }}
                                     className="dropdown-item btn-primary"
                                     onClick={() =>
                                       this.onBonusReasonSelect(
-                                        "Special Project(s)"
+                                        'Special Project(s)'
                                       )
                                     }
                                   >
                                     Special Project(s)
                                   </li>
                                   <li
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: 'pointer' }}
                                     className="dropdown-item btn-primary"
                                     onClick={() =>
-                                      this.onBonusReasonSelect("Budget Savings")
+                                      this.onBonusReasonSelect('Budget Savings')
                                     }
                                   >
                                     Budget Savings
                                   </li>
                                   <li
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: 'pointer' }}
                                     className="dropdown-item btn-primary"
                                     onClick={() =>
-                                      this.onBonusReasonSelect("Other")
+                                      this.onBonusReasonSelect('Other')
                                     }
                                   >
                                     Other
@@ -566,7 +576,7 @@ export default class otherRequest extends Component {
                                 </div>
                               </div>
 
-                              {this.state.bonusReason === "Other" ? (
+                              {this.state.bonusReason === 'Other' ? (
                                 <input
                                   required={true}
                                   type="text"
@@ -601,20 +611,20 @@ export default class otherRequest extends Component {
                               <div className="col-11">
                                 <p
                                   className="text-secondary"
-                                  style={{ cursor: "pointer" }}
+                                  style={{ cursor: 'pointer' }}
                                   onClick={() =>
                                     this.setState({
-                                      attachBonusFile: !this.state
-                                        .attachBonusFile,
+                                      attachBonusFile:
+                                        !this.state.attachBonusFile
                                     })
                                   }
                                 >
-                                  Attachment (if any){" "}
+                                  Attachment (if any){' '}
                                   <i
-                                    className={classNames("fa", {
-                                      "fa-caret-down": !this.state
-                                        .attachBonusFile,
-                                      "fa-caret-up": this.state.attachBonusFile,
+                                    className={classNames('fa', {
+                                      'fa-caret-down':
+                                        !this.state.attachBonusFile,
+                                      'fa-caret-up': this.state.attachBonusFile
                                     })}
                                   ></i>
                                 </p>
@@ -626,7 +636,7 @@ export default class otherRequest extends Component {
                                         id="file"
                                         className="custom-file-input"
                                         onChange={this.onFileChange}
-                                        ref={(ref) => (this.fileInput = ref)}
+                                        ref={ref => (this.fileInput = ref)}
                                       />
                                       <label
                                         className="custom-file-label"
@@ -634,14 +644,16 @@ export default class otherRequest extends Component {
                                       >
                                         {this.state.attachmentName
                                           ? this.state.attachmentName
-                                          : "Upload file"}
+                                          : 'Upload file'}
                                       </label>
                                     </div>
                                     <div className="input-group-append">
                                       <span
-                                        style={{ cursor: "pointer", 
-                                        height: "34px",
-                                        marginLeft: "5px" }}
+                                        style={{
+                                          cursor: 'pointer',
+                                          height: '34px',
+                                          marginLeft: '5px'
+                                        }}
                                         onClick={this.clearFile}
                                         className="input-group-text"
                                         id="file"
@@ -667,9 +679,9 @@ export default class otherRequest extends Component {
                 </div>
               )}
             </Spring>
-          );
+          )
         }}
       </Consumer>
-    );
+    )
   }
 }

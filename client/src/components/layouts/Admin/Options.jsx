@@ -290,16 +290,22 @@ export default class Options extends Component {
                               type="button"
                               className="btn btn-danger"
                               value="Delete Admin Account"
-                              onClick={() =>
-                                toast.notify(
-                                  'Admin account deleted successfully',
-                                  {
-                                    position: 'top-right',
-                                    duration: 3000,
-                                    color: '#ff0000'
-                                  }
-                                ) && this.onDeleteAdminAccount(dispatch)
-                              }
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    'Are you sure you want to delete your ADMIN account? This action cannot be undone!!'
+                                  )
+                                ) {
+                                  toast.notify(
+                                    'Admin account deleted successfully',
+                                    {
+                                      position: 'top-right',
+                                      duration: 3000,
+                                      color: '#ff0000'
+                                    }
+                                  ) && this.onDeleteAdminAccount(dispatch)
+                                }
+                              }}
                             />
 
                             <div className="alert alert-danger mt-3">

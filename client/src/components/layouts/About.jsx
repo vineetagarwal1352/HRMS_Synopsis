@@ -1,7 +1,7 @@
-import React from "react";
-import { Spring } from "react-spring/renderprops";
-import checkList from "../../assets/images/checklist.svg";
-import "../../assets/about-styles/about.css";
+import React from 'react'
+import { Spring } from 'react-spring/renderprops'
+import '../../assets/about-styles/about.css'
+import checkList from '../../assets/images/checklist.svg'
 
 export default function About() {
   return (
@@ -12,10 +12,10 @@ export default function About() {
           to={{ opacity: 1 }}
           config={{ duration: 300 }}
         >
-          {(props) => (
+          {props => (
             <div style={props}>
               <div className="col-12 col-sm-12 ">
-                <h1 style={{ fontWeight: "lighter mt-5" }}>
+                <h1 style={{ fontWeight: 'lighter mt-5' }}>
                   <span className="font-italic">About HRMS</span>
                 </h1>
                 <p className="lead font-italic">
@@ -39,12 +39,20 @@ export default function About() {
                   Add reminders directly to your google calender!
                 </p>
                 <p className="text-secondary font-italic mt-5">Version 1.0.0</p>
-                <a href="https://github.com/68rohitd/Human-Resource-management">
+                <a
+                  href="https://github.com/vineetagarwal1352/HRMS_Synopsis"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <b>GitHub Repo</b>
                 </a>
                 <br />
-                <a href="https://youtu.be/wA47RCpYd3g">
-                  <b>Youtube Demo </b>
+                <a
+                  href="https://docs.google.com/presentation/d/1xl_azzorlwGAVUE0AuH5aude_alx_MPIs8mI6dWEm0s/edit?usp=sharing"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <b>Project Report</b>
                 </a>
               </div>
 
@@ -56,5 +64,5 @@ export default function About() {
         </Spring>
       </div>
     </div>
-  );
+  )
 }

@@ -1,46 +1,75 @@
 const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-const path = require("path");
-const db = require("./models/index");
-
-require("dotenv").config();
-
 const app = express();
+const bodyParser = require("body-parser");
+const path = require("path");
+const rateLimiter = require("express-rate-limit");
+require("dotenv").config();
+const mongoose = require("mongoose");
+const db = require("./models/index");
+const { sendMail } = require("./utils/mailer");
+const PORT = process.env.PORT || 5000;
+
+// ---------------MONGO DB SETUP---------------
+function mongoConnect() {
+  try {
+    mongoose.connect(process.env.ATLAS_URI);
+    const db = mongoose.connection;
+    db.on("error", (error) => {
+     throw new Error(error.message);
+    });
+
+    db.on("disconnected", () => {
+      console.log("MongoDB => disconnected !!");
+    });
+
+    db.once("open", () => {
+      console.log("MongoDB => connected !!");
+    });
+  } catch (error) {
+    console.error(`MongoDB connection error: ${error.message}`);
+    next(error);
+  }
+}
+
+function errorHandler(err, req, res, next) {
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message,
+  });
+}
+
+// connect to mongoDB client
+mongoConnect();
 app.use(express.static("public"));
-app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json({ type: "application/json" }));
+app.use(
+  rateLimiter({
+    windowMs: 1 * 60 * 1000,
+    max: 20,
+    handler: function (req, res) {
+      res.status(429).json({
+        success: false,
+        message: "Requests limit exceeded. Please wait a while then try again",
+      });
+    },
+  })
+);
+app.use(errorHandler);
 
-// extra start
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-// extra end
-
-const uri = process.env.ATLAS_URI;
-mongoose.connect(uri, {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-  useCreateIndex: true,
-});
-
-const connection = mongoose.connection;
-connection.once("open", () => {
-  console.log("MongoDB database connection established successfully");
-});
-
-const usersRouter = require("./routes/users");
-const adminRouter = require("./routes/admin");
-const emailRouter = require("./routes/email");
+const usersRouter = require("./routes/user.routes");
+const adminRouter = require("./routes/admin.routes");
 
 app.use("/api/users", usersRouter);
 app.use("/api/admin", adminRouter);
-app.use("/api/email", emailRouter.router);
+app.use("/api/email/contact", async (req, res) => {
+  try {
+    const mailerResp = await sendMail(req.body);
+    res.send("Message sent successfully");
+  } catch (error) {
+    next(error);
+  }
+});
 
 // serve static assets
 if (process.env.NODE_ENV === "production") {
@@ -50,8 +79,7 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
   });
 }
-const port = process.env.PORT || 5000;
 
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
 });

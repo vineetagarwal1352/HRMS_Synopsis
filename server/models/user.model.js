@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true, minlength: 5 },
+  password: { type: String, required: true, minlength: 8 },
   name: { type: String },
   gender: { type: String },
   address: { type: String },
@@ -14,8 +14,8 @@ const userSchema = new Schema({
   objective: { type: String },
   skills: { type: String },
   doj: { type: String },
-  notification: { type: Array },
-  alert: { type: Array },
+  notification: [],
+  alert: [],
 });
 
 const User = mongoose.model("User", userSchema);

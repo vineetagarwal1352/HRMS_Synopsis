@@ -1,130 +1,24 @@
-const router = require("express").Router();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-let auth = require("../middleware/auth");
-let Admin = require("../models/admin.model");
-let User = require("../models/user.model");
-let Salary = require("../models/salary.model");
-let SalaryReceipt = require("../models/salaryReceipt.model");
-const { json } = require("express");
-const TeamAndRole = require("../models/teams.and.roles.model");
-const Loan = require("../models/loan.model");
+let {
+  Admin,
+  User,
+  Salary,
+  SalaryReceipt,
+  TeamAndRole,
+  Loan,
+} = require("../models/index");
 
-// @desc: register a user
-router.post("/register", async (req, res) => {
+async function getAdmin(req, res) {
   try {
-    // check if already one admin is present or not
-    const admin = await Admin.countDocuments();
-
-    if (admin)
-      return res
-        .status(400)
-        .json({ msg: "There can be only one admin at max" });
-
-    let { email, password, passwordCheck, name } = req.body;
-
-    // validation
-    if (!email || !password || !passwordCheck) {
-      return res.status(400).json({ msg: "Please enter all the fields" });
-    }
-
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ msg: "Password should be at least 6 characters" });
-    }
-
-    if (password !== passwordCheck) {
-      return res
-        .status(400)
-        .json({ msg: "Password & Confirm Password does not match!!" });
-    }
-
-    const existingUser = await Admin.findOne({ email: email });
-    if (existingUser) {
-      return res.status(400).json({
-        msg: "The email address is already in use by another account.",
-      });
-    }
-
-    if (!name) name = email;
-
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    const newUser = new Admin({
-      email,
-      password: passwordHash,
-      name,
-      role: "admin",
-      leaveRequests: [],
-      bonusRequests: [],
-      loanRequests: [],
-    });
-
-    const savedUser = await newUser.save();
-    res.json(savedUser);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const user = await Admin.findById(req.user);
+    res.status(200).json({ user });
+  } catch (error) {
+    console.log(`getAdmin - ${error.message}`);
+    next(error);
   }
-});
-
-// @desc: login a user
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // validate
-    if (!email || !password)
-      return res.status(400).json({ msg: "Please enter all the fields" });
-
-    const user = await Admin.findOne({ email: email });
-    if (!user)
-      return res
-        .status(400)
-        .json({ msg: "No account with this email has been registered" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ msg: "Invalid username or password" });
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    res.json({
-      token,
-      user,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// @desc: verify a user against token
-router.post("/tokenIsValid", async (req, res) => {
-  try {
-    const token = req.header("x-auth-token");
-    if (!token) return res.json(false);
-
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    if (!verified) return res.json(false);
-
-    const user = await Admin.findById(verified.id);
-    if (!user) return res.json(false);
-
-    return res.json(true);
-  } catch (err) {
-    res.status(500).json({ err: err.message });
-  }
-});
-
-// @desc: get user details of logged in user
-router.get("/", auth, async (req, res) => {
-  const user = await Admin.findById(req.user);
-  res.json({
-    user,
-  });
-});
+}
 
 // @desc: add employee by admin
-router.post("/addEmployee", async (req, res) => {
+async function addEmployee(req, res) {
   try {
     let { email, name, address, phoneNo, role, team, doj, gender } = req.body;
 
@@ -144,6 +38,7 @@ router.post("/addEmployee", async (req, res) => {
 
     // generating password
     const password = "password";
+
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
       return res.status(400).json({
@@ -194,14 +89,15 @@ router.post("/addEmployee", async (req, res) => {
 
     await newSalaryReceipt.save();
 
-    res.json(savedUser);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(200).json(savedUser);
+  } catch (error) {
+    console.log(`addEmployee - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: approve/reject requests
-router.put("/takeAction", async (req, res) => {
+async function takeAction(req, res) {
   const user = await User.findOne({ _id: req.body.userReq.empId });
   if (!user) return res.status(400).json({ msg: "user not found" });
 
@@ -354,22 +250,28 @@ router.put("/takeAction", async (req, res) => {
         });
 
         const savedLoan = await newLoan.save();
-        res.json(savedLoan);
+        res.status(200).json(savedLoan);
       }
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+    } catch (error) {
+      console.log(`takeAction - ${error.message}`);
+      next(error);
     }
   }
-});
+}
 
 // @desc: get list of all emp
-router.get("/getEmpList", async (req, res) => {
-  const empList = await User.find({});
-  res.send(empList);
-});
+async function getEmpList(req, res) {
+  try {
+    const empList = await User.find({});
+    res.status(200).json(empList);
+  } catch (error) {
+    console.log(`getEmpList - ${error.message}`);
+    next(error);
+  }
+}
 
 // @desc: delete a user account
-router.delete("/delete/:id", async (req, res) => {
+async function deleteEmp(req, res) {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
 
@@ -416,75 +318,84 @@ router.delete("/delete/:id", async (req, res) => {
       }
     );
 
-    res.json(deletedUser);
-  } catch (err) {
-    res.status(500).json({ err: err.message });
+    res.status(200).json(deletedUser);
+  } catch (error) {
+    console.log(`deleteUser - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: get a particular users data
-router.get("/getUserData/:id", async (req, res) => {
+async function getEmpData(req, res) {
   try {
     const user = await User.findById(req.params.id);
-    res.json(user);
-  } catch (err) {
-    res.status(500).json(err);
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(`getEmpData - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: search component
-router.post("/search", async (req, res) => {
-  let name = req.body.name;
-  let role = req.body.role;
-  let team = req.body.team;
-  let email = req.body.email;
-  let doj = req.body.doj;
+async function searchEmp(req, res) {
+  try {
+    let name = req.body.name;
+    let role = req.body.role;
+    let team = req.body.team;
+    let email = req.body.email;
+    let doj = req.body.doj;
 
-  console.log(name, role, team, email, doj);
+    console.log(name, role, team, email, doj);
 
-  // if fields are empty, match everything
-  if (name === "") name = new RegExp(/.+/s);
-  if (role === "") role = new RegExp(/.+/s);
-  if (team === "") team = new RegExp(/.+/s);
-  if (email === "") email = new RegExp(/.+/s);
-  if (doj === "") doj = new RegExp(/.+/s);
+    // if fields are empty, match everything
+    if (name === "") name = new RegExp(/.+/s);
+    if (role === "") role = new RegExp(/.+/s);
+    if (team === "") team = new RegExp(/.+/s);
+    if (email === "") email = new RegExp(/.+/s);
+    if (doj === "") doj = new RegExp(/.+/s);
 
-  // console.log(l, s, i, d);
+    const emp = await User.find({
+      name: new RegExp(name, "i"),
+      role: new RegExp(role, "i"),
+      team: new RegExp(team, "i"),
+      email: new RegExp(email, "i"),
+      doj: new RegExp(doj, "i"),
+    });
 
-  User.find({
-    name: new RegExp(name, "i"),
-    role: new RegExp(role, "i"),
-    team: new RegExp(team, "i"),
-    email: new RegExp(email, "i"),
-    doj: new RegExp(doj, "i"),
-  })
-    .then((emp) => {
-      res.json(emp);
-    })
-    .catch((err) => res.status(400).json("Error: " + err));
-});
+    res.status(200).json(emp);
+  } catch (error) {
+    console.log(`searchEmp - ${error.message}`);
+    next(error);
+  }
+}
 
 // ************************** SALARY PART: START ***********************************
 // @desc: get list of emp's sal receipts
-router.get("/getAllEmpsSalReceipt", async (req, res) => {
-  const AllEmpsSalReceipt = await SalaryReceipt.find({});
-  res.send(AllEmpsSalReceipt);
-});
+async function getAllEmpsSalReceipt(req, res) {
+  try {
+    const AllEmpsSalReceipt = await SalaryReceipt.find({});
+    res.status(200).json(AllEmpsSalReceipt);
+  } catch (error) {
+    console.log(`getAllEmpsSalReceipt - ${error.message}`);
+    next(error);
+  }
+}
 
 // @desc: get particular emp's sal receipt details
-router.get("/getSingleEmpSalReceipts/:id", async (req, res) => {
+async function getEmpSalReceipts(req, res) {
   try {
     const singleEmpSalReceipts = await SalaryReceipt.findOne({
       empId: req.params.id,
     });
-    res.json(singleEmpSalReceipts);
-  } catch (err) {
-    res.status(500).json(err);
+    res.status(200).json(singleEmpSalReceipts);
+  } catch (error) {
+    console.log(`getEmpSalReceipts - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: generate emp sal receipt for particular month
-router.put("/generateSalReceipt", async (req, res) => {
+async function generateSalReceipt(req, res) {
   try {
     // update emp SALARY profile: clear bonus, total leaves
     await Salary.findOneAndUpdate(
@@ -510,34 +421,37 @@ router.put("/generateSalReceipt", async (req, res) => {
       },
       { new: true }
     );
-    res.json({ updatedEmpReceiptDoc, monthlyReceipts });
-  } catch (e) {
-    res.status(500).json({ err: e });
+    res.status(200).json({ updatedEmpReceiptDoc, monthlyReceipts });
+  } catch (error) {
+    console.log(`generateSalReceipt - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: get list of emp's salary details
-router.get("/getEmpSalList", async (req, res) => {
+async function getEmpSalList(req, res) {
   try {
     const empSalList = await Salary.find({});
-    res.json(empSalList);
-  } catch (err) {
-    res.status(500).json(err);
+    res.status(200).json(empSalList);
+  } catch (error) {
+    console.log(`getEmpSalList - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: get a particular users salary details
-router.get("/getUserSalDetails/:id", async (req, res) => {
+async function getUserSalDetails(req, res) {
   try {
     const userSalDetails = await Salary.findOne({ empId: req.params.id });
-    res.json(userSalDetails);
-  } catch (err) {
-    res.status(500).json(err);
+    res.status(200).json(userSalDetails);
+  } catch (error) {
+    console.log(`getUserSalDetails - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: update user salary details
-router.put("/updateSalaryDetails/:id", async (req, res) => {
+async function updateSalaryDetails(req, res) {
   try {
     const salDetails = req.body.salDetails;
     const salDoc = await Salary.findOneAndUpdate(
@@ -561,93 +475,110 @@ router.put("/updateSalaryDetails/:id", async (req, res) => {
       }
     );
 
-    res.json(salDoc);
-  } catch (e) {
-    res.status(500).json({ err: err.message });
+    res.status(200).json(salDoc);
+  } catch (error) {
+    console.log(`updateSalaryDetails - ${error.message}`);
+    next(error);
   }
-});
-// ************************** SALARY PART: END ***********************************
+}
 
 // ********************** OPTIONS PANEL APIS BEGIN *******************************
 // @desc: get team list (adding a new team)
-router.get("/getTeamsAndRoles", async (req, res) => {
-  const teamsAndRoles = await TeamAndRole.find({});
-  res.json(teamsAndRoles);
-});
+async function getTeamsAndRoles(req, res) {
+  try {
+    const teamsAndRoles = await TeamAndRole.find({});
+    res.json(teamsAndRoles);
+  } catch (error) {
+    console.log(`getTeamsAndRoles - ${error.message}`);
+    next(error);
+  }
+}
 
 // @desc: add new team
-router.post("/addNewTeam", async (req, res) => {
-  const teamName = req.body.teamName;
-  const teamObj = await TeamAndRole.find();
+async function addNewTeam(req, res) {
+  try {
+    const teamName = req.body.teamName;
+    const teamObj = await TeamAndRole.find();
 
-  let teamList = teamObj[0].teamNames;
+    let teamList = teamObj[0].teamNames;
 
-  teamList.push(teamName);
+    teamList.push(teamName);
 
-  const updatedTeamObj = await TeamAndRole.findOneAndUpdate(
-    {},
-    {
-      teamNames: teamList,
-    },
-    { new: true }
-  );
+    const updatedTeamObj = await TeamAndRole.findOneAndUpdate(
+      {},
+      {
+        teamNames: teamList,
+      },
+      { new: true }
+    );
 
-  res.json(updatedTeamObj);
-});
+    res.status(200).json(updatedTeamObj);
+  } catch (error) {
+    console.log(`addNewTeam - ${error.message}`);
+    next(error);
+  }
+}
 
 // @desc: add new team
-router.post("/addNewRole", async (req, res) => {
-  const roleName = req.body.roleName;
-  const teamObj = await TeamAndRole.find({});
+async function addNewRole(req, res) {
+  try {
+    const roleName = req.body.roleName;
+    const teamObj = await TeamAndRole.find({});
 
-  let roleList = teamObj[0].roleNames;
-  roleList.push(roleName);
+    let roleList = teamObj[0].roleNames;
+    roleList.push(roleName);
 
-  const updatedTeamObj = await TeamAndRole.findOneAndUpdate(
-    {},
-    {
-      roleNames: roleList,
-    },
-    { new: true }
-  );
+    const updatedTeamObj = await TeamAndRole.findOneAndUpdate(
+      {},
+      {
+        roleNames: roleList,
+      },
+      { new: true }
+    );
 
-  res.json(updatedTeamObj);
-});
+    res.status(200).json(updatedTeamObj);
+  } catch (error) {
+    console.log(`addNewRole - ${error.message}`);
+    next(error);
+  }
+}
 
 // @desc: delete admin account
-router.delete("/deleteAdminAcc/:id", async (req, res) => {
+async function deleteAdminAcc(req, res) {
   try {
     const deletedAdminAcc = await Admin.findByIdAndDelete(req.params.id);
     res.json(deletedAdminAcc);
-  } catch (e) {
-    res.status(500).json(e);
+  } catch (error) {
+    console.log(`deleteAdminAcc - ${error.message}`);
+    next(error);
   }
-});
-// ********************** OPTIONS PANEL APIS END *******************************
+}
 
 // ********************** LOAN APIS START *******************************
 // @desc: get all loan docs from LOAN MODEL
-router.get("/getLoanList", async (req, res) => {
+async function getLoanList(req, res) {
   try {
     const loanList = await Loan.find({});
     res.json(loanList);
-  } catch (e) {
-    res.status(500).json(e);
+  } catch (error) {
+    console.log(`getLoanList - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: get single emp's loan history
-router.get("/getEmpLoanHistory/:id", async (req, res) => {
+async function getEmpLoanHistory(req, res) {
   try {
     const empLoanHistory = await Loan.find({ empId: req.params.id });
-    res.json(empLoanHistory);
-  } catch (e) {
-    res.status(500).json(e);
+    res.status(200).json(empLoanHistory);
+  } catch (error) {
+    console.log(`getEmpLoanHistory - ${error.message}`);
+    next(error);
   }
-});
+}
 
 // @desc: mark particular loan as paid
-router.put("/loanPaid", async (req, res) => {
+async function loanPaid(req, res) {
   try {
     // update USER.notification MODEL
     const emp = await User.findById(req.body.empId);
@@ -672,9 +603,30 @@ router.put("/loanPaid", async (req, res) => {
     );
 
     res.json(loan);
-  } catch (e) {
-    res.status(500).json(e);
+  } catch (error) {
+    next(error);
   }
-});
-// ********************** LOAN APIS START *******************************
-module.exports = router;
+}
+
+module.exports = {
+  getAdmin,
+  addEmployee,
+  takeAction,
+  getEmpList,
+  deleteEmp,
+  getEmpData,
+  searchEmp,
+  getAllEmpsSalReceipt,
+  getEmpSalReceipts,
+  generateSalReceipt,
+  getEmpSalList,
+  getUserSalDetails,
+  updateSalaryDetails,
+  getTeamsAndRoles,
+  addNewTeam,
+  addNewRole,
+  deleteAdminAcc,
+  getLoanList,
+  getEmpLoanHistory,
+  loanPaid,
+};

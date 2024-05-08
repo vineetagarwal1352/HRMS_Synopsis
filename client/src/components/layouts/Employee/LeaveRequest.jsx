@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Consumer } from '../../../context'
 import EmpSidePanel from './EmpSidePanel'
 
-export default class Attendence extends Component {
+export default class LeaveRequest extends Component {
   constructor() {
     super()
 

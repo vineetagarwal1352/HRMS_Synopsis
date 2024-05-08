@@ -1,10 +1,10 @@
-import axios from "axios";
-import React, { Component } from "react";
-import { Bar } from "react-chartjs-2";
+import axios from 'axios'
+import React, { Component } from 'react'
+import { Bar } from 'react-chartjs-2'
 
 export default class BarChart2 extends Component {
   constructor() {
-    super();
+    super()
 
     this.state = {
       // for chart
@@ -12,59 +12,68 @@ export default class BarChart2 extends Component {
       bonusReqCount: 0,
       loanReqCount: 0,
 
-      labels: ["Leave Request", "Bonus Request", "Loan Request"],
+      labels: ['Leave Request', 'Bonus Request', 'Loan Request'],
       datasets: [
         {
-          label: "Request count",
-          backgroundColor: "#ffe0b3",
-          borderColor: "orange",
+          label: 'Request count',
+          backgroundColor: '#ffe0b3',
+          borderColor: 'orange',
           borderWidth: 2,
-          data: [],
-        },
-      ],
-    };
+          data: []
+        }
+      ]
+    }
   }
 
   componentDidMount = async () => {
-    const token = localStorage.getItem("auth-token");
-    const adminRes = await axios.get("/api/admin", {
-      headers: { "x-auth-token": token },
-    });
+    const token = localStorage.getItem('auth-token')
+    const adminRes = await axios.get('/api/admin', {
+      headers: { 'x-auth-token': token }
+    })
 
-    let leaveReqCount = adminRes.data.user.leaveRequests.length;
-    let bonusReqCount = adminRes.data.user.bonusRequests.length;
-    let loanReqCount = adminRes.data.user.loanRequests.length;
+    let leaveReqCount = adminRes.data.user.leaveRequests.length
+    let bonusReqCount = adminRes.data.user.bonusRequests.length
+    let loanReqCount = adminRes.data.user.loanRequests.length
+
+    console.log(
+      'leaveReqCount',
+      leaveReqCount,
+      'bonusReqCount',
+      bonusReqCount,
+      'loanReqCount',
+      loanReqCount
+    )
 
     this.setState(
       {
         leaveReqCount,
         bonusReqCount,
-        loanReqCount,
+        loanReqCount
       },
       () => {
-        this.onPopulateBarChart();
+        this.onPopulateBarChart()
       }
-    );
-  };
+    )
+  }
 
   onPopulateBarChart = () => {
-    let datasets = this.state.datasets;
+    let datasets = this.state.datasets
     let data = [
       this.state.leaveReqCount,
       this.state.bonusReqCount,
-      this.state.loanReqCount,
-    ];
+      this.state.loanReqCount
+    ]
 
-    datasets[0].data = data;
+    datasets[0].data = data
 
-    this.setState({ datasets });
-  };
+    this.setState({ datasets })
+  }
 
   render() {
     return (
       <div
         className="chartContainer"
-        style={{ height: "250px", padding: "10px" }}
+        style={{ height: '250px', padding: '10px' }}
       >
         <Bar
           data={this.state}
@@ -73,21 +82,21 @@ export default class BarChart2 extends Component {
               yAxes: [
                 {
                   ticks: {
-                    beginAtZero: true,
-                  },
-                },
-              ],
+                    beginAtZero: true
+                  }
+                }
+              ]
             },
             title: {
               display: true,
-              text: "No. of requests per subject",
+              text: 'No. of requests per subject',
               fontSize: 20,
-              position: "bottom",
+              position: 'bottom'
             },
-            maintainAspectRatio: false,
+            maintainAspectRatio: false
           }}
         />
       </div>
-    );
+    )
   }
 }
